@@ -33,10 +33,11 @@ export function RadioProvider({ children }) {
   const userNameRef = useRef('');
 
   useEffect(() => {
-    const socket = io(SERVER_URL, {
-      transports: ['websocket'],
-      reconnectionAttempts: 5,
-    });
+   const socket = io(SERVER_URL, {
+  transports: ['websocket', 'polling'],
+  reconnectionAttempts: 5,
+  withCredentials: true,
+});
 
     socketRef.current = socket;
 

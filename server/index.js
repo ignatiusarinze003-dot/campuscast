@@ -18,9 +18,17 @@ const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:5173";
 
 const io = new Server(server, {
   cors: {
-    origin: FRONTEND_URL,
+    origin: [FRONTEND_URL, "http://localhost:5173"],
     methods: ["GET", "POST"],
+    credentials: true,
   },
+});
+
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Origin", FRONTEND_URL);
+  res.header("Access-Control-Allow-Methods", "GET, POST");
+  res.header("Access-Control-Allow-Headers", "Content-Type");
+  next();
 });
 
 app.get("/", (req, res) => {
@@ -201,7 +209,7 @@ io.on("connection", (socket) => {
 
 }); // ← closes io.on("connection")
 
-const PORT = 4000;
+const PORT = process.env.PORT || 4000;
 server.listen(PORT, () => {
   console.log(`CampusCast server running on http://localhost:${PORT}`);
 });
