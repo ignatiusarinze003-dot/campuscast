@@ -1,4 +1,4 @@
-// MusicPlayer.jsx — audio player with controls
+// MusicPlayer.jsx — audio player with YouTube and Spotify support
 import { useState, useRef, useEffect } from 'react';
 import { useRadio } from '../context/RadioContext';
 
@@ -10,6 +10,31 @@ export default function MusicPlayer({ isHost }) {
   const [duration, setDuration] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
   const audioRef = useRef(null);
+
+  const currentSong = roomState.currentSong || '';
+
+  const isYoutube = currentSong.includes('youtube.com') || currentSong.includes('youtu.be');
+  const isSpotify = currentSong.includes('spotify.com');
+  const isMp3 = currentSong.startsWith('http') && !isYoutube && !isSpotify;
+
+  // Extract YouTube video ID
+  const getYoutubeId = (url) => {
+    try {
+      if (url.includes('youtu.be/')) {
+        return url.split('youtu.be/')[1].split('?')[0];
+      }
+      return new URL(url).searchParams.get('v');
+    } catch {
+      return null;
+    }
+  };
+
+  // Convert Spotify URL to embed URL
+  const getSpotifyEmbed = (url) => {
+    return url
+      .replace('open.spotify.com/', 'open.spotify.com/embed/')
+      .split('?')[0];
+  };
 
   useEffect(() => {
     if (audioRef.current) {
@@ -23,7 +48,6 @@ export default function MusicPlayer({ isHost }) {
       audioRef.current.pause();
     } else {
       audioRef.current.play().catch(() => {
-        // No audio source loaded yet
         setIsPlaying(false);
       });
     }
@@ -74,64 +98,114 @@ export default function MusicPlayer({ isHost }) {
         </div>
         <div style={styles.songText}>
           <p style={styles.songTitle}>
-            {roomState.currentSong || 'No song selected'}
+            {currentSong || 'No song selected'}
           </p>
           <p style={styles.songSub}>
             {isHost ? 'You are the DJ' : 'CampusCast Live'}
           </p>
+          {isHost && (
+            <p style={styles.hint}>
+              Paste a YouTube, Spotify, or MP3 URL as the song
+            </p>
+          )}
         </div>
       </div>
 
-      {/* Audio element — only rendered when needed, no empty src */}
-      <audio
-        ref={audioRef}
-        onTimeUpdate={handleTimeUpdate}
-        onLoadedMetadata={handleLoadedMetadata}
-        onEnded={() => setIsPlaying(false)}
-        preload="none"
-      />
+      {/* YouTube embed */}
+      {isYoutube && getYoutubeId(currentSong) && (
+        <iframe
+          width="100%"
+          height="120"
+          src={`https://www.youtube.com/embed/${getYoutubeId(currentSong)}?autoplay=1`}
+          allow="autoplay; encrypted-media"
+          allowFullScreen
+          style={styles.embed}
+          title="YouTube player"
+        />
+      )}
 
-      {/* Progress bar */}
-      <div style={styles.progressWrapper} onClick={handleSeek}>
-        <div style={styles.progressBg}>
-          <div
-            style={{
-              ...styles.progressFill,
-              width: `${progress}%`,
-            }}
-          />
+      {/* Spotify embed */}
+      {isSpotify && (
+        <iframe
+          src={getSpotifyEmbed(currentSong)}
+          width="100%"
+          height="80"
+          allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+          style={styles.embed}
+          title="Spotify player"
+        />
+      )}
+
+      {/* MP3 audio element */}
+      {isMp3 && (
+        <audio
+          ref={audioRef}
+          src={currentSong}
+          onTimeUpdate={handleTimeUpdate}
+          onLoadedMetadata={handleLoadedMetadata}
+          onEnded={() => setIsPlaying(false)}
+          preload="auto"
+          crossOrigin="anonymous"
+        />
+      )}
+
+      {/* Hidden audio for non-URL songs */}
+      {!isMp3 && (
+        <audio
+          ref={audioRef}
+          onTimeUpdate={handleTimeUpdate}
+          onLoadedMetadata={handleLoadedMetadata}
+          onEnded={() => setIsPlaying(false)}
+          preload="none"
+        />
+      )}
+
+      {/* Progress bar — only for MP3 */}
+      {isMp3 && (
+        <div style={styles.progressWrapper} onClick={handleSeek}>
+          <div style={styles.progressBg}>
+            <div style={{ ...styles.progressFill, width: `${progress}%` }} />
+          </div>
+          <div style={styles.timeRow}>
+            <span style={styles.timeText}>{formatTime(currentTime)}</span>
+            <span style={styles.timeText}>{formatTime(duration)}</span>
+          </div>
         </div>
-        <div style={styles.timeRow}>
-          <span style={styles.timeText}>{formatTime(currentTime)}</span>
-          <span style={styles.timeText}>{formatTime(duration)}</span>
+      )}
+
+      {/* Controls — only for MP3 */}
+      {isMp3 && (
+        <div style={styles.controls}>
+          <div style={styles.volumeRow}>
+            <span style={styles.volIcon}>
+              {volume === 0 ? '🔇' : volume < 0.5 ? '🔉' : '🔊'}
+            </span>
+            <input
+              type="range"
+              min="0"
+              max="1"
+              step="0.01"
+              value={volume}
+              onChange={(e) => setVolume(parseFloat(e.target.value))}
+              style={styles.volumeSlider}
+            />
+          </div>
+          <button style={styles.playBtn} onClick={togglePlay}>
+            {isPlaying ? '⏸' : '▶'}
+          </button>
+          <div style={styles.liveTag}>● LIVE</div>
         </div>
-      </div>
+      )}
 
-      {/* Controls */}
-      <div style={styles.controls}>
-
-        <div style={styles.volumeRow}>
-          <span style={styles.volIcon}>
-            {volume === 0 ? '🔇' : volume < 0.5 ? '🔉' : '🔊'}
+      {/* Live tag for YouTube and Spotify */}
+      {(isYoutube || isSpotify) && (
+        <div style={styles.liveRow}>
+          <div style={styles.liveTag}>● LIVE</div>
+          <span style={styles.sourceTag}>
+            {isYoutube ? '▶ YouTube' : '🎵 Spotify'}
           </span>
-          <input
-            type="range"
-            min="0"
-            max="1"
-            step="0.01"
-            value={volume}
-            onChange={(e) => setVolume(parseFloat(e.target.value))}
-            style={styles.volumeSlider}
-          />
         </div>
-
-        <button style={styles.playBtn} onClick={togglePlay}>
-          {isPlaying ? '⏸' : '▶'}
-        </button>
-
-        <div style={styles.liveTag}>● LIVE</div>
-
-      </div>
+      )}
 
       <style>{`
         @keyframes spin {
@@ -191,6 +265,15 @@ const styles = {
     color: 'var(--text-muted)',
     marginTop: '2px',
   },
+  hint: {
+    fontSize: '11px',
+    color: 'var(--accent)',
+    marginTop: '4px',
+  },
+  embed: {
+    borderRadius: '8px',
+    border: 'none',
+  },
   progressWrapper: {
     cursor: 'pointer',
   },
@@ -248,6 +331,11 @@ const styles = {
     boxShadow: 'var(--shadow)',
     flexShrink: 0,
   },
+  liveRow: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '10px',
+  },
   liveTag: {
     background: 'var(--danger)',
     color: '#fff',
@@ -257,5 +345,9 @@ const styles = {
     borderRadius: '20px',
     letterSpacing: '1px',
     flexShrink: 0,
+  },
+  sourceTag: {
+    fontSize: '12px',
+    color: 'var(--text-muted)',
   },
 };
