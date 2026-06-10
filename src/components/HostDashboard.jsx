@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { useRadio } from '../context/RadioContext';
 import ListenerQueue from './ListenerQueue';
+import ChatBox from './ChatBox';
 import Toast from './Toast';
 
 export default function HostDashboard() {
@@ -91,7 +92,7 @@ export default function HostDashboard() {
               <input
                 style={styles.input}
                 type="text"
-                placeholder="Song name or link..."
+                placeholder="Song name or YouTube/Spotify link..."
                 value={songInput}
                 onChange={(e) => setSongInput(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleSongUpdate()}
@@ -160,9 +161,12 @@ export default function HostDashboard() {
 
         </div>
 
-        {/* Right column — queue */}
+        {/* Right column — queue + chat */}
         <div style={styles.rightCol}>
           <ListenerQueue />
+          <div style={styles.chatWrapper}>
+            <ChatBox />
+          </div>
         </div>
 
       </div>
@@ -268,6 +272,12 @@ const styles = {
   rightCol: {
     width: '300px',
     minWidth: '260px',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '16px',
+  },
+  chatWrapper: {
+    marginTop: '4px',
   },
   card: {
     background: 'var(--bg-card)',
