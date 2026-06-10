@@ -1,0 +1,39 @@
+/* CampusCast — Enhanced Dark Radio Theme */
+:root {
+  /* Backgrounds */
+  --bg-primary: #0a0a0f;
+  --bg-secondary: #12121a;
+  --bg-card: #1a1a2e;
+  --bg-hover: #1f1f35;
+
+  /* Accent colours */
+  --accent: #6c63ff;
+  --accent-glow: #6c63ff30;
+  --accent-secondary: #ff6584;
+  --accent-hover: #7b73ff;
+
+  /* Text */
+  --text-primary: #ffffff;
+  --text-secondary: #a0a0b0;
+  --text-muted: #606070;
+
+  /* UI */
+  --border: #2a2a3e;
+  --border-hover: #3a3a5e;
+  --success: #43e97b;
+  --warning: #f9a825;
+  --danger: #ff6584;
+
+  /* Spacing */
+  --radius: 12px;
+  --radius-sm: 8px;
+  --radius-lg: 16px;
+
+  /* Shadows */
+  --shadow: 0 4px 24px rgba(108, 99, 255, 0.15);
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 8px 40px rgba(108, 99, 255, 0.25);
+
+  /* Transitions */
+  --transition: all 0.2s ease;
+}
