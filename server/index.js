@@ -189,13 +189,17 @@ io.on("connection", (socket) => {
     io.emit("room-state", getRoomState());
   });
 
-  socket.on("answer-question", (id) => {
-    const room = getRoomState();
-    if (!room.questions) return;
-    const q = room.questions.find((q) => q.id === id);
-    if (q) q.answered = true;
-    io.emit("room-state", getRoomState());
-  });
+  socket.on("answer-question", (data) => {
+  const room = getRoomState();
+  if (!room.questions) return;
+  const q = room.questions.find((q) => q.id === data.id);
+  if (q) {
+    q.answered = true;
+    q.reply = data.reply;
+    q.repliedAt = new Date().toLocaleTimeString();
+  }
+  io.emit("room-state", getRoomState());
+});
 
   socket.on("disconnect", (reason) => {
     console.log(`User disconnected: ${socket.id} — reason: ${reason}`);

@@ -164,9 +164,9 @@ export function RadioProvider({ children }) {
     socketRef.current?.emit('ask-question', { question });
   };
 
-  const answerQuestion = (id) => {
-    socketRef.current?.emit('answer-question', id);
-  };
+  const answerQuestion = (id, reply) => {
+  socketRef.current?.emit('answer-question', { id, reply });
+};
 
   const value = {
     connected,

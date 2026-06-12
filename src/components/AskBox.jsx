@@ -1,4 +1,4 @@
-// AskBox.jsx — anonymous question submission
+// AskBox.jsx — anonymous question submission with host replies
 import { useState } from 'react';
 import { useRadio } from '../context/RadioContext';
 
@@ -6,6 +6,7 @@ export default function AskBox({ isHost }) {
   const { roomState, askQuestion, answerQuestion } = useRadio();
   const [input, setInput] = useState('');
   const [submitted, setSubmitted] = useState(false);
+  const [replyInputs, setReplyInputs] = useState({});
 
   const questions = roomState.questions || [];
 
@@ -15,6 +16,17 @@ export default function AskBox({ isHost }) {
     setInput('');
     setSubmitted(true);
     setTimeout(() => setSubmitted(false), 3000);
+  };
+
+  const handleReply = (id) => {
+    const reply = replyInputs[id];
+    if (!reply || !reply.trim()) return;
+    answerQuestion(id, reply.trim());
+    setReplyInputs((prev) => ({ ...prev, [id]: '' }));
+  };
+
+  const updateReplyInput = (id, value) => {
+    setReplyInputs((prev) => ({ ...prev, [id]: value }));
   };
 
   // ── HOST VIEW ─────────────────────────────────────
@@ -41,20 +53,42 @@ export default function AskBox({ isHost }) {
                 ...(q.answered ? styles.answeredCard : {}),
               }}
             >
+              {/* Question */}
               <div style={styles.questionHeader}>
                 <span style={styles.questionTime}>{q.time}</span>
                 {q.answered && (
                   <span style={styles.answeredTag}>✓ Answered</span>
                 )}
               </div>
-              <p style={styles.questionText}>{q.question}</p>
+              <p style={styles.questionText}>❓ {q.question}</p>
+
+              {/* Host reply if exists */}
+              {q.reply && (
+                <div style={styles.replyBox}>
+                  <span style={styles.replyLabel}>🎙️ Your reply:</span>
+                  <p style={styles.replyText}>{q.reply}</p>
+                  <span style={styles.replyTime}>{q.repliedAt}</span>
+                </div>
+              )}
+
+              {/* Reply input — only if not answered */}
               {!q.answered && (
-                <button
-                  style={styles.answerBtn}
-                  onClick={() => answerQuestion(q.id)}
-                >
-                  Mark as Answered
-                </button>
+                <div style={styles.replyRow}>
+                  <input
+                    style={styles.replyInput}
+                    type="text"
+                    placeholder="Type your reply..."
+                    value={replyInputs[q.id] || ''}
+                    onChange={(e) => updateReplyInput(q.id, e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && handleReply(q.id)}
+                  />
+                  <button
+                    style={styles.replyBtn}
+                    onClick={() => handleReply(q.id)}
+                  >
+                    Reply
+                  </button>
+                </div>
               )}
             </div>
           ))
@@ -68,12 +102,12 @@ export default function AskBox({ isHost }) {
     <div style={styles.container}>
       <h3 style={styles.title}>❓ Ask Anonymously</h3>
       <p style={styles.desc}>
-        Submit a question or topic for the host — no name attached.
+        Submit a question — the host will reply live.
       </p>
 
       {submitted ? (
         <div style={styles.successMsg}>
-          ✅ Question submitted! The host will see it.
+          ✅ Question submitted! Watch for the host's reply below.
         </div>
       ) : (
         <>
@@ -89,6 +123,24 @@ export default function AskBox({ isHost }) {
             Submit Anonymously
           </button>
         </>
+      )}
+
+      {/* Show answered questions with replies */}
+      {questions.filter(q => q.answered && q.reply).length > 0 && (
+        <div style={styles.answeredSection}>
+          <p style={styles.answeredTitle}>🎙️ Host Replies</p>
+          {questions
+            .filter(q => q.answered && q.reply)
+            .map((q) => (
+              <div key={q.id} style={styles.answeredItem}>
+                <p style={styles.answeredQuestion}>❓ {q.question}</p>
+                <div style={styles.replyBox}>
+                  <span style={styles.replyLabel}>🎙️ Host replied:</span>
+                  <p style={styles.replyText}>{q.reply}</p>
+                </div>
+              </div>
+            ))}
+        </div>
       )}
     </div>
   );
@@ -164,12 +216,12 @@ const styles = {
     padding: '12px',
     display: 'flex',
     flexDirection: 'column',
-    gap: '6px',
+    gap: '8px',
     borderLeft: '3px solid var(--accent)',
   },
   answeredCard: {
-    opacity: 0.5,
     borderLeft: '3px solid var(--success)',
+    opacity: 0.85,
   },
   questionHeader: {
     display: 'flex',
@@ -190,13 +242,73 @@ const styles = {
     color: 'var(--text-primary)',
     lineHeight: '1.5',
   },
-  answerBtn: {
+  replyRow: {
+    display: 'flex',
+    gap: '8px',
+    marginTop: '4px',
+  },
+  replyInput: {
+    flex: 1,
+    padding: '8px 12px',
+    background: 'var(--bg-card)',
+    border: '1px solid var(--border)',
+    borderRadius: '8px',
+    color: 'var(--text-primary)',
+    fontSize: '12px',
+  },
+  replyBtn: {
     background: 'var(--success)',
     color: '#fff',
     fontSize: '12px',
     fontWeight: '700',
-    padding: '6px 12px',
+    padding: '8px 14px',
+    borderRadius: '8px',
+    flexShrink: 0,
+  },
+  replyBox: {
+    background: 'var(--bg-card)',
     borderRadius: '6px',
-    alignSelf: 'flex-start',
+    padding: '8px 12px',
+    borderLeft: '3px solid var(--success)',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '4px',
+  },
+  replyLabel: {
+    fontSize: '11px',
+    color: 'var(--success)',
+    fontWeight: '700',
+  },
+  replyText: {
+    fontSize: '13px',
+    color: 'var(--text-primary)',
+    lineHeight: '1.5',
+  },
+  replyTime: {
+    fontSize: '10px',
+    color: 'var(--text-muted)',
+  },
+  answeredSection: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '10px',
+    marginTop: '8px',
+  },
+  answeredTitle: {
+    fontSize: '13px',
+    fontWeight: '700',
+    color: 'var(--text-secondary)',
+  },
+  answeredItem: {
+    background: 'var(--bg-secondary)',
+    borderRadius: '8px',
+    padding: '10px',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '6px',
+  },
+  answeredQuestion: {
+    fontSize: '13px',
+    color: 'var(--text-secondary)',
   },
 };
