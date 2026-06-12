@@ -9,7 +9,6 @@ import ConnectionBanner from '../components/ConnectionBanner';
 import '../styles/global.css';
 import AskBox from '../components/AskBox';
 import OnlineUsers from '../components/OnlineUsers';
-import ChatBox from '../components/ChatBox';
 import VoiceBroadcast from '../components/VoiceBroadcast';
 
 
@@ -81,11 +80,6 @@ export default function Studio() {
 
 {/* Host dashboard */}
 <HostDashboard />
-
-{/* Chat box */}
-<div style={styles.section}>
-  <ChatBox />
-</div>
 
       {/* Ask box */}
       <div style={styles.section}>

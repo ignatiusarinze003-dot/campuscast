@@ -160,8 +160,8 @@ export default function MusicPlayer({ isHost }) {
         />
       )}
 
-      {/* Progress bar — only for MP3 */}
-      {isMp3 && (
+      {/* HOST ONLY — full controls */}
+      {isHost && isMp3 && (
         <div style={styles.progressWrapper} onClick={handleSeek}>
           <div style={styles.progressBg}>
             <div style={{ ...styles.progressFill, width: `${progress}%` }} />
@@ -173,8 +173,7 @@ export default function MusicPlayer({ isHost }) {
         </div>
       )}
 
-      {/* Controls — only for MP3 */}
-      {isMp3 && (
+      {isHost && isMp3 && (
         <div style={styles.controls}>
           <div style={styles.volumeRow}>
             <span style={styles.volIcon}>
@@ -197,13 +196,34 @@ export default function MusicPlayer({ isHost }) {
         </div>
       )}
 
-      {/* Live tag for YouTube and Spotify */}
-      {(isYoutube || isSpotify) && (
+      {/* HOST ONLY — live tag for YouTube and Spotify */}
+      {isHost && (isYoutube || isSpotify) && (
         <div style={styles.liveRow}>
           <div style={styles.liveTag}>● LIVE</div>
           <span style={styles.sourceTag}>
             {isYoutube ? '▶ YouTube' : '🎵 Spotify'}
           </span>
+        </div>
+      )}
+
+      {/* LISTENER ONLY — read only now playing display */}
+      {!isHost && (
+        <div style={styles.listenerView}>
+          {currentSong ? (
+            <div style={styles.nowPlayingRow}>
+              <span style={styles.nowPlayingDot}>●</span>
+              <span style={styles.nowPlayingLabel}>Now Playing</span>
+              {(isYoutube || isSpotify) && (
+                <span style={styles.sourceTag}>
+                  {isYoutube ? '▶ YouTube' : '🎵 Spotify'}
+                </span>
+              )}
+            </div>
+          ) : (
+            <p style={styles.waitingText}>
+              🎵 Waiting for the host to play a song...
+            </p>
+          )}
         </div>
       )}
 
@@ -216,7 +236,6 @@ export default function MusicPlayer({ isHost }) {
 
     </div>
   );
-}
 
 const styles = {
   container: {
