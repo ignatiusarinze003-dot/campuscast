@@ -10,6 +10,7 @@ const room = {
   vote: null,
   archive: [],
   questions: [],
+  voiceLive: false,
 };
 
 export function addListener(id, name) {

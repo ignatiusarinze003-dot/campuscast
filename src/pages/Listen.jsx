@@ -10,6 +10,7 @@ import SongVoting from '../components/SongVoting';
 import '../styles/global.css';
 import AskBox from '../components/AskBox';
 import OnlineUsers from '../components/OnlineUsers';
+import VoiceListener from '../components/VoiceListener';
 
 export default function Listen() {
   const navigate = useNavigate();
@@ -75,6 +76,9 @@ export default function Listen() {
 
           {/* Music player */}
           <MusicPlayer isHost={false} />
+
+          {/* Voice listener */}
+          <VoiceListener />
 
           {/* Host info */}
           <div style={styles.card}>

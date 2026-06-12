@@ -201,6 +201,48 @@ io.on("connection", (socket) => {
   io.emit("room-state", getRoomState());
 });
 
+// Host starts voice broadcast
+  socket.on("voice-start", () => {
+    const room = getRoomState();
+    room.voiceLive = true;
+    console.log("Voice broadcast started");
+    socket.broadcast.emit("host-voice-start", { hostId: socket.id });
+    io.emit("room-state", getRoomState());
+  });
+
+  // Host stops voice broadcast
+  socket.on("voice-stop", () => {
+    const room = getRoomState();
+    room.voiceLive = false;
+    console.log("Voice broadcast stopped");
+    io.emit("host-voice-stop");
+    io.emit("room-state", getRoomState());
+  });
+
+  // WebRTC signaling — offer from host to listener
+  socket.on("voice-offer", (data) => {
+    io.to(data.targetId).emit("voice-offer", {
+      offer: data.offer,
+      hostId: socket.id,
+    });
+  });
+
+  // WebRTC signaling — answer from listener to host
+  socket.on("voice-answer", (data) => {
+    io.to(data.hostId).emit("voice-answer", {
+      answer: data.answer,
+      listenerId: socket.id,
+    });
+  });
+
+  // WebRTC signaling — ICE candidates
+  socket.on("ice-candidate", (data) => {
+    io.to(data.targetId).emit("ice-candidate", {
+      candidate: data.candidate,
+      fromId: socket.id,
+    });
+  });
+
   socket.on("disconnect", (reason) => {
     console.log(`User disconnected: ${socket.id} — reason: ${reason}`);
     removeUser(socket.id);

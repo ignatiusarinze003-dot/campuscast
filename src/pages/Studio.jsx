@@ -10,6 +10,7 @@ import '../styles/global.css';
 import AskBox from '../components/AskBox';
 import OnlineUsers from '../components/OnlineUsers';
 import ChatBox from '../components/ChatBox';
+import VoiceBroadcast from '../components/VoiceBroadcast';
 
 
 export default function Studio() {
@@ -49,6 +50,11 @@ export default function Studio() {
       <div style={styles.section}>
         <MusicPlayer isHost={true} />
       </div>
+
+      {/* Voice broadcast */}
+<div style={styles.section}>
+  <VoiceBroadcast />
+</div>
 
       {/* Action bar */}
 <div style={styles.actionBar}>
