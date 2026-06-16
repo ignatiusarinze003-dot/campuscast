@@ -232,10 +232,15 @@ export default function MusicPlayer({ isHost }) {
           from { transform: rotate(0deg); }
           to { transform: rotate(360deg); }
         }
+        @keyframes pulse {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.5; }
+        }
       `}</style>
 
     </div>
   );
+}
 
 const styles = {
   container: {
@@ -367,6 +372,28 @@ const styles = {
   },
   sourceTag: {
     fontSize: '12px',
+    color: 'var(--text-muted)',
+  },
+  listenerView: {
+    padding: '8px 0',
+  },
+  nowPlayingRow: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+  },
+  nowPlayingDot: {
+    color: 'var(--danger)',
+    fontSize: '12px',
+    animation: 'pulse 1.5s ease infinite',
+  },
+  nowPlayingLabel: {
+    fontSize: '13px',
+    fontWeight: '600',
+    color: 'var(--text-secondary)',
+  },
+  waitingText: {
+    fontSize: '13px',
     color: 'var(--text-muted)',
   },
 };
